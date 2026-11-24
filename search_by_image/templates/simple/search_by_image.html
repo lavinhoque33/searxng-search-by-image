@@ -1,0 +1,136 @@
+{% extends "simple/page_with_header.html" %}
+{% from 'simple/icons.html' import icon_big %}
+
+{% block title %}{{ _('Search by image') }} - {% endblock %}
+
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('search_by_image.static', filename='search_by_image.css') }}" type="text/css">
+<script src="{{ url_for('search_by_image.static', filename='search_by_image.js') }}" defer></script>
+{% endblock %}
+
+{% block content %}
+<div id="sbi">
+  <h1>{{ _('Search by image') }}</h1>
+
+  <form id="sbi-form" method="post" action="{{ url_for('search_by_image.page') }}" enctype="multipart/form-data"{% if submitted %} data-submitted="1"{% endif %}>
+    <label id="sbi-drop" for="sbi-file">
+      <span class="sbi-drop-icon">{{ icon_big('camera') }}</span>
+      <strong>{{ _('Choose a photo') }}</strong>
+      <span class="sbi-hint">{{ _('or drop one here, or paste it') }}</span>
+    </label>
+    <input id="sbi-file" type="file" name="image" accept="image/*">
+    <div class="sbi-url-row">
+      <input id="sbi-url" type="url" name="url" placeholder="{{ _('or paste a link to an image') }}" value="{{ url_value }}" autocomplete="off">
+      <input type="submit" value="{{ _('Search') }}">
+    </div>
+    <label class="sbi-anime">
+      <input type="checkbox" name="anime" value="1"{% if anime %} checked{% endif %}>
+      {{ _('Anime screenshot: also ask trace.moe for the show, episode and moment') }}
+    </label>
+    <p class="sbi-note">
+      {{ _('The image goes to Yandex, and to trace.moe when ticked. Location and camera details are removed first. Up to %(mb)s MB.', mb=max_mb) }}
+    </p>
+    <p id="sbi-busy" class="sbi-note" hidden>{{ _('Searching…') }}</p>
+  </form>
+
+  {% if error %}
+  <div class="dialog-error" role="alert"><p>{{ error }}</p></div>
+  {% endif %}
+
+  {% if submitted and not error %}
+  <section class="sbi-query">
+    {% if preview %}<img class="sbi-query-image" src="{{ preview }}" alt="{{ _('Your image') }}">{% endif %}
+    <div>
+      {% if open_in %}
+      <h2>{{ _('Also search on') }}</h2>
+      <p class="sbi-open-in">
+        {% for name, href in open_in %}<a class="button" href="{{ href }}" target="_blank" rel="noreferrer noopener">{{ name }}</a> {% endfor %}
+      </p>
+      <p class="sbi-note">{{ _('These sites block servers, so they open in your browser and fetch the image from %(host)s.', host=public_host) }}</p>
+      {% else %}
+      <p class="sbi-note">{{ _('Other search sites need a link to the image, and the link to the uploaded copy comes from Yandex, which failed.') }}</p>
+      {% endif %}
+      {% if yandex and yandex.tags %}
+      <p class="sbi-tags">{{ _('Looks like:') }}
+        {% for tag in yandex.tags %}<a href="{{ url_for('search', q=tag) }}">{{ tag }}</a>{% endfor %}
+      </p>
+      {% endif %}
+    </div>
+  </section>
+
+  {% if source_errors %}
+  <div class="dialog-warning" role="alert">
+    <ul>{% for name, message in source_errors %}<li><strong>{{ name }}:</strong> {{ message }}</li>{% endfor %}</ul>
+  </div>
+  {% endif %}
+
+  {% if anime_result %}
+  <section class="sbi-section">
+    <h2>{{ _('Anime scene') }} <small>trace.moe</small></h2>
+    {% for match in anime_result.matches %}
+    <article class="result sbi-anime-match">
+      {% if match.frame %}<img src="{{ image_proxify(match.frame) }}" alt="" loading="lazy">{% endif %}
+      <div>
+        <h3><a href="{{ match.anilist_url }}" rel="noreferrer">{{ match.title }}</a></h3>
+        {% if match.native_title and match.native_title != match.title %}<p class="sbi-muted">{{ match.native_title }}</p>{% endif %}
+        <p>
+          {% if match.episode %}{{ _('Episode %(n)s', n=match.episode) }} · {% endif %}{{ _('at %(t)s', t=match.time) }}
+          · {{ _('%(p)s %% match', p=match.similarity) }}
+          {% if match.format or match.year %}<span class="sbi-muted"> · {{ match.format }} {{ match.year or '' }}</span>{% endif %}
+        </p>
+      </div>
+    </article>
+    {% else %}
+    <p>{{ _('No anime scene matched closely enough (%(p)s or more).', p='90 %') }}</p>
+    {% endfor %}
+    {% if anime_result.quota_left is not none %}
+    <p class="sbi-note">{{ _('trace.moe: %(n)s free searches left for this connection.', n=anime_result.quota_left) }}</p>
+    {% endif %}
+  </section>
+  {% endif %}
+
+  {% if yandex %}
+  <section class="sbi-section">
+    <h2>{{ _('Pages with this image') }} <small>Yandex · {{ yandex.sites|length }}</small></h2>
+    {% for site in yandex.sites[:site_limit] %}
+    <article class="result sbi-site">
+      {% if site.thumbnail %}<a href="{{ site.url }}" rel="noreferrer" class="sbi-site-thumb"><img src="{{ image_proxify(site.thumbnail) }}" alt="" loading="lazy"></a>{% endif %}
+      <div>
+        <h3><a href="{{ site.url }}" rel="noreferrer">{{ site.title }}</a></h3>
+        <p class="sbi-muted">{{ site.domain }}{% if site.size %} · {% if site.image_url %}<a href="{{ site.image_url }}" rel="noreferrer">{{ site.size }}</a>{% else %}{{ site.size }}{% endif %}{% endif %}</p>
+        {% if site.description %}<p class="content">{{ site.description }}</p>{% endif %}
+      </div>
+    </article>
+    {% else %}
+    <p>{{ _('Yandex found no pages with this image.') }}</p>
+    {% endfor %}
+    {% if yandex.sites|length > site_limit %}
+    <p><a href="{{ yandex.page_url }}" target="_blank" rel="noreferrer noopener">{{ _('More on Yandex') }}</a></p>
+    {% endif %}
+  </section>
+
+  {% if yandex.sizes %}
+  <section class="sbi-section">
+    <h2>{{ _('Other sizes') }}</h2>
+    <p class="sbi-sizes">{% for size in yandex.sizes %}<a href="{{ size.url }}" rel="noreferrer">{{ size.label }}</a>{% endfor %}</p>
+  </section>
+  {% endif %}
+
+  {% if yandex.similar %}
+  <section class="sbi-section">
+    <h2>{{ _('Similar images') }}</h2>
+    <div class="sbi-grid">
+      {% for item in yandex.similar %}
+      <figure>
+        <a href="{{ item.url }}" rel="noreferrer" title="{{ item.title }}"><img src="{{ image_proxify(item.thumbnail) }}" alt="{{ item.title }}" loading="lazy"></a>
+        <figcaption><a href="{{ url_for('search_by_image.page', url=item.url) }}">{{ _('Search with this image') }}</a></figcaption>
+      </figure>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+  {% endif %}
+  {% endif %}
+</div>
+{% endblock %}

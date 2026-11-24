@@ -1,0 +1,227 @@
+/* Search by image. Colours come from SearXNG's theme variables, so light,
+   dark and automatic themes all work. */
+
+/* Camera button inside the search box (start and results pages) */
+#sbi_camera {
+  display: flex;
+  align-items: center;
+  padding: 0 0.4rem;
+  background: var(--color-search-background);
+  color: var(--color-search-font);
+  z-index: 100;
+}
+
+#sbi_camera:hover,
+#sbi_camera:focus-visible {
+  color: var(--color-search-background-hover);
+}
+
+/* Page */
+#sbi {
+  max-width: 60rem;
+  margin: 0 auto;
+}
+
+#sbi h1 {
+  font-size: 1.6rem;
+  margin: 1rem 0;
+}
+
+#sbi h2 {
+  font-size: 1.2rem;
+  margin: 1.5rem 0 0.5rem;
+}
+
+#sbi h2 small {
+  color: var(--color-result-publishdate-font);
+  font-size: 0.8rem;
+  font-weight: normal;
+  margin-left: 0.4rem;
+}
+
+#sbi-form {
+  display: grid;
+  gap: 0.8rem;
+}
+
+#sbi-drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 2rem 1rem;
+  border: 2px dashed var(--color-search-border);
+  border-radius: 0.8rem;
+  background: var(--color-search-background);
+  color: var(--color-search-font);
+  cursor: pointer;
+  text-align: center;
+}
+
+#sbi-drop:hover,
+#sbi-drop.sbi-dragging,
+#sbi-form:focus-within #sbi-drop {
+  border-color: var(--color-btn-background);
+}
+
+#sbi-drop .sbi-drop-icon .sxng-icon-set-big {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+/* The label is the visible control; the input stays reachable by keyboard. */
+#sbi-file {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.sbi-url-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+#sbi-url {
+  flex: 1;
+  min-width: 0;
+  padding: 0.7rem 1rem;
+  border: 1px solid var(--color-search-border);
+  border-radius: 10px;
+  background: var(--color-search-background);
+  color: var(--color-search-font);
+}
+
+.sbi-anime {
+  cursor: pointer;
+}
+
+.sbi-note,
+.sbi-hint,
+.sbi-muted {
+  color: var(--color-result-publishdate-font);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.sbi-busy #sbi-drop {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.sbi-query {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  align-items: flex-start;
+  margin-top: 1.5rem;
+}
+
+.sbi-query > div {
+  flex: 1;
+  min-width: 16rem;
+}
+
+.sbi-query h2 {
+  margin-top: 0 !important;
+}
+
+.sbi-query-image {
+  max-width: 14rem;
+  max-height: 14rem;
+  border-radius: 0.5rem;
+  object-fit: contain;
+}
+
+.sbi-open-in {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0 0 0.5rem;
+}
+
+.sbi-open-in .button {
+  text-decoration: none;
+}
+
+.sbi-tags a,
+.sbi-sizes a {
+  display: inline-block;
+  margin: 0.2rem 0.4rem 0.2rem 0;
+  padding: 0.2rem 0.6rem;
+  border: 1px solid var(--color-search-border);
+  border-radius: 1rem;
+  color: var(--color-result-link-font);
+  text-decoration: none;
+}
+
+.sbi-tags a:hover,
+.sbi-sizes a:hover {
+  border-color: var(--color-btn-background);
+}
+
+#sbi .result {
+  display: flex;
+  gap: 1rem;
+  width: auto;
+  margin: 0.8rem 0;
+}
+
+#sbi .result h3 {
+  margin-top: 0;
+}
+
+#sbi .result p {
+  margin: 0.2rem 0;
+}
+
+.sbi-site-thumb img,
+.sbi-anime-match img {
+  width: 9rem;
+  max-height: 7rem;
+  object-fit: cover;
+  border-radius: 0.4rem;
+}
+
+.sbi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+  gap: 0.8rem;
+}
+
+.sbi-grid figure {
+  margin: 0;
+}
+
+.sbi-grid img {
+  width: 100%;
+  height: 9rem;
+  object-fit: cover;
+  border-radius: 0.4rem;
+  display: block;
+}
+
+.sbi-grid figcaption {
+  font-size: 0.8rem;
+  margin-top: 0.2rem;
+}
+
+.sbi-grid figcaption a {
+  color: var(--color-result-link-font);
+}
+
+#sbi .dialog-warning li {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 40rem) {
+  #sbi .result {
+    gap: 0.6rem;
+  }
+
+  .sbi-site-thumb img,
+  .sbi-anime-match img {
+    width: 5.5rem;
+    max-height: 5.5rem;
+  }
+}
